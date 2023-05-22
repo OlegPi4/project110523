@@ -252,32 +252,27 @@ window.addEventListener('DOMContentLoaded', () => {
          `;
          
          form.insertAdjacentElement('afterend', statusMessage);
-
-         const request = new XMLHttpRequest();
-         request.open('POST', 'server.php');
-         //request.setRequestHeader('Content-type', 'multipart/from-data');
-         //для FormData строки заголовков не нужно, формируется автоматически 
-         request.setRequestHeader('Content-type', 'application/json'); // заголовок - передача в формате JSON
+         // Реализация с Fetch
+         
          const formData = new FormData(form); 
-         //  для отправки в формате FormDat - request.send(formData);
-         // преобразовываем данные в JSON 
-         const object = {};
-         formData.forEach(function (value, key) {
-            object[key] = value;
-         });
-         const json = JSON.stringify(object);
-         request.send(json);
 
-         request.addEventListener('load', () => {
-            if (request.status === 200) {
-               console.log(request.response);
-               showThanksModal(messag.success); // вызов функции показа сообщения об отправке
-               form.reset(); // очищаем форму после отправки.
-               statusMessage.remove();
-            } else {
-               showThanksModal(messag.failure);
-            }
+         fetch('server.php', {
+            method: 'POST',
+            // headers: {
+            //    'Content-type': 'application/json'
+            // },
+            body: formData
+         }).then(data => data.text())
+         .then(data => {
+            console.log(data);
+            showThanksModal(messag.success); // вызов функции показа сообщения об отправке
+            statusMessage.remove();
+         }).catch(() => {
+            showThanksModal(messag.failure);
+         }).finally(() => {
+            form.reset(); // очищаем форму после отправки.
          });
+
       });
    };
    // стилизуем ч-з js модальное окно при отправке данных
@@ -308,5 +303,5 @@ window.addEventListener('DOMContentLoaded', () => {
          closeModal();
       }, 4000);
    }
-
+   
 });
