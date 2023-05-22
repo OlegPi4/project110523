@@ -255,14 +255,19 @@ window.addEventListener('DOMContentLoaded', () => {
          // Реализация с Fetch
          
          const formData = new FormData(form); 
-
+         const object = {};
+         formData.forEach(function (value, key) {
+            object[key] = value;
+         });
+         
          fetch('server.php', {
             method: 'POST',
-            // headers: {
-            //    'Content-type': 'application/json'
-            // },
-            body: formData
-         }).then(data => data.text())
+            headers: {
+               'Content-type': 'application/json'
+            },
+            body: JSON.stringify(object)
+         })
+         .then(data => data.text())
          .then(data => {
             console.log(data);
             showThanksModal(messag.success); // вызов функции показа сообщения об отправке
