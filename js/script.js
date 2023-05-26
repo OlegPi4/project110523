@@ -1,5 +1,6 @@
 'use strict';
 
+
 window.addEventListener('DOMContentLoaded', () => {
    // Tabs
    const tabs = document.querySelectorAll('.tabheader__item'),
@@ -209,13 +210,19 @@ window.addEventListener('DOMContentLoaded', () => {
    };
    // формирование карточек меню из данных сервера json
    // вариант 1 - предпочтительный с исп. классов
-   getResourse('http://localhost:3000/menu')
+   // getResourse('http://localhost:3000/menu')
+   //    .then(data => {
+   //       data.forEach(({ img, altimg, title, descr, price }) => {
+   //          new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+   //       });
+   //    });
+   // вариант 1 - предпочтительный с исп. классов и axios  
+   axios.get('http://localhost:3000/menu')
       .then(data => {
-         data.forEach(({ img, altimg, title, descr, price }) => {
+         data.data.forEach(({ img, altimg, title, descr, price }) => {
             new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
          });
       });
-
    // вариант 2 - для формирования верстки с ходу (без использования классов)
 
    // const courseOfCurrency = 36.93; // привязка к курсу для цены в карточках
@@ -329,4 +336,49 @@ window.addEventListener('DOMContentLoaded', () => {
    fetch('http://localhost:3000/menu')
       .then(data => data.json())
       .then(res => console.log(res));
+
+   // Слайдер 
+   const slides = document.querySelectorAll('.offer__slide'),
+      next = document.querySelector('.offer__slider-next'),
+      prev = document.querySelector('.offer__slider-prev'),
+      total = document.querySelector('#total'),
+      current = document.querySelector('#current');
+   
+   let slideIndex = 1;
+   // Установка начального слайда
+   showSlides(slideIndex);
+   // Устанавливаем число слайдов длясчеткика и добавляем ведущий 0 если < 10
+   if (slides.length < 10) {
+      total.textContent = `0${slides.length}`;
+   } else {
+      total.textContent = slides.length;
+   }
+
+   // функция показа слайда
+   function showSlides(n) {
+      if (n > slides.length) slideIndex = 1;
+      if (n < 1) slideIndex = slides.length;
+      // скрываем слайды
+      slides.forEach(item => item.style.display = 'none');
+      // показываем нужный слайд
+      slides[slideIndex - 1].style.display = 'block';
+      // обрабатывам текущий слайд для чсетчика
+      if (slideIndex < 10) {
+         current.textContent = `0${slideIndex}`;
+      } else {
+         current.textContent = slideIndex;
+      }
+   }
+   // изменение слайда 
+   function plusSlides(n) {
+      showSlides(slideIndex += n);
+   }
+   // обработчики нажатий на стрелки
+   prev.addEventListener('click', () => {
+      plusSlides(-1);
+   });
+   next.addEventListener('click', () => {
+      plusSlides(1);
+   });
 });
+
