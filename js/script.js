@@ -10,7 +10,6 @@ window.addEventListener('DOMContentLoaded', () => {
    // сначала скроем все табы
    function hideTabContent() {
       tabsContent.forEach(item => {
-         //item.style.display = 'none'; // с использование стилей
          item.classList.add('hide');  // с использованием классов
          item.classList.remove('show', 'fade');  // с использованием классов
       });
@@ -108,11 +107,8 @@ window.addEventListener('DOMContentLoaded', () => {
    // Модальное окно
    const modalTrigger = document.querySelectorAll('[data-modal]'),
       modal = document.querySelector('.modal');
-   // modalCloseBtn = document.querySelector('[data-close]');   
    // выводим в функцию открытия  модального окна
    function openModal() {
-      //modal.classList.add('hide');
-      //modal.classList.remove('show');
       modal.classList.toggle('show'); // вариант с использованием toggle
       // восстанавливаем скрол сайта при закрытии мадольного  окна
       document.body.style.overflow = 'hide';
@@ -121,8 +117,6 @@ window.addEventListener('DOMContentLoaded', () => {
    }
       // выводим в функцию закрытие модального окна
    function closeModal() {
-      //modal.classList.add('hide');
-      //modal.classList.remove('show');
       modal.classList.toggle('show'); // вариант с использованием toggle
       // восстанавливаем скрол сайта при закрытии мадольного  окна
       document.body.style.overflow = '';
@@ -130,7 +124,6 @@ window.addEventListener('DOMContentLoaded', () => {
       modalTrigger.forEach(btn => {
       btn.addEventListener('click', openModal);
    });
-   //  modalCloseBtn.addEventListener('click', closeModal);
    // закрытия мо при клике вне модального окна или на крестик в мо и клавише Esc
    modal.addEventListener('click', (e) => {
       if (e.target === modal || e.target.getAttribute('data-close') == '') {
@@ -200,14 +193,15 @@ window.addEventListener('DOMContentLoaded', () => {
    }
 
    // выводим fetch в отдельную функцию для получения данных с json сервера   
-   const getResourse = async (url) => {
-      const res = await fetch(url);
+   // getResourse  не нужен при использовании axios
+   // const getResourse = async (url) => {
+   //    const res = await fetch(url);
 
-      if (!res.ok) { 
-         throw new Error(`Coudn't fetch ${url}, status ${res.status}`);
-      }
-      return await res.json();
-   };
+   //    if (!res.ok) {   // проверяем ответ на ошибку
+   //       throw new Error(`Coudn't fetch ${url}, status ${res.status}`);
+   //    }
+   //    return await res.json();
+   //};
    // формирование карточек меню из данных сервера json
    // вариант 1 - предпочтительный с исп. классов
    // getResourse('http://localhost:3000/menu')
@@ -339,46 +333,98 @@ window.addEventListener('DOMContentLoaded', () => {
 
    // Слайдер 
    const slides = document.querySelectorAll('.offer__slide'),
+      prev = document.querySelector('.offer__slider-prev'),  
       next = document.querySelector('.offer__slider-next'),
-      prev = document.querySelector('.offer__slider-prev'),
       total = document.querySelector('#total'),
-      current = document.querySelector('#current');
+      current = document.querySelector('#current'),
+      slidesWrapper = document.querySelector('.offer__slider-wrapper'),
+      slidesField = document.querySelector('.offer__slider-inner'),
+      width = window.getComputedStyle(slidesWrapper).width;
    
    let slideIndex = 1;
-   // Установка начального слайда
-   showSlides(slideIndex);
-   // Устанавливаем число слайдов длясчеткика и добавляем ведущий 0 если < 10
+   let offset = 0; 
+
    if (slides.length < 10) {
       total.textContent = `0${slides.length}`;
+      current.textContent = `0${slideIndex}`;
    } else {
       total.textContent = slides.length;
+      current.textContent = slideIndex;
    }
+   slidesField.style.width = 100 * slides.length + '%';
+   slidesField.style.display = 'flex';
+   slidesField.style.transition = '0.5s all';
+   slidesWrapper.style.overflow = 'hidden';
+   
+   slides.forEach(slide => {
+      slide.style.width = width;
+   });
 
-   // функция показа слайда
-   function showSlides(n) {
-      if (n > slides.length) slideIndex = 1;
-      if (n < 1) slideIndex = slides.length;
-      // скрываем слайды
-      slides.forEach(item => item.style.display = 'none');
-      // показываем нужный слайд
-      slides[slideIndex - 1].style.display = 'block';
-      // обрабатывам текущий слайд для чсетчика
-      if (slideIndex < 10) {
-         current.textContent = `0${slideIndex}`;
+   next.addEventListener('click', () => {
+      if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
+         offset = 0;
+      } else {
+         offset += +width.slice(0, width.length - 2);
+      }
+      slidesField.style.transform = `translateX(-${offset}px)`;
+      if (slideIndex == slides.length) {
+         slideIndex = 1;
+      } else {
+         slideIndex++;
+      }
+      if (slides.length < 10) {
+         current.textContent = `0${slideIndex}`; 
       } else {
          current.textContent = slideIndex;
       }
-   }
-   // изменение слайда 
-   function plusSlides(n) {
-      showSlides(slideIndex += n);
-   }
-   // обработчики нажатий на стрелки
+   });
    prev.addEventListener('click', () => {
-      plusSlides(-1);
+      if (offset == 0) {
+         offset = +width.slice(0, width.length - 2) * (slides.length - 1);
+      } else {
+         offset -= +width.slice(0, width.length - 2);
+      }
+      slidesField.style.transform = `translateX(-${offset}px)`;
+      if (slideIndex == 1) {
+         slideIndex = slides.length;
+      } else {
+         slideIndex--;
+      }
+      if (slides.length < 10) {
+         current.textContent = `0${slideIndex}`; 
+      } else {
+         current.textContent = slideIndex;
+      }
    });
-   next.addEventListener('click', () => {
-      plusSlides(1);
-   });
+   // showSlides(slideIndex);
+   
+   // if (slides.length < 10) {
+   //    total.textContent = `0${slides.length}`;
+   // } else {
+   //    total.textContent = slides.length;
+   // }
+
+   // function showSlides(n) {
+   //    if (n > slides.length) slideIndex = 1;
+   //    if (n < 1) slideIndex = slides.length;
+   //    slides.forEach(item => item.style.display = 'none');
+   //    slides[slideIndex - 1].style.display = 'block';
+   //    if (slideIndex < 10) {
+   //       current.textContent = `0${slideIndex}`;
+   //    } else {
+   //       current.textContent = slideIndex;
+   //    }
+   // }
+   
+   // function plusSlides(n) {
+   //    showSlides(slideIndex += n);
+   // }
+   
+   // prev.addEventListener('click', () => {
+   //    plusSlides(-1);
+   // });
+   // next.addEventListener('click', () => {
+   //    plusSlides(1);
+   // });
 });
 
