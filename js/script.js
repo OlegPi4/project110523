@@ -302,17 +302,23 @@ window.addEventListener('DOMContentLoaded', () => {
       slidesWrapper = document.querySelector('.offer__slider-wrapper'),
       slidesField = document.querySelector('.offer__slider-inner'),
       width = window.getComputedStyle(slidesWrapper).width;
-   
+      
    let slideIndex = 1;
    let offset = 0; 
 
-   if (slides.length < 10) {
-      total.textContent = `0${slides.length}`;
-      current.textContent = `0${slideIndex}`;
-   } else {
-      total.textContent = slides.length;
-      current.textContent = slideIndex;
+   function showCounterSlide(curr = 1) {
+      if (slides.length < 10) {
+         current.textContent = `0${curr}`;
+      } else {
+         current.textContent = curr;
+      }
    }
+
+   function showDots(dots) {
+      dots.forEach(dot => dot.style.opacity = '0.5');
+      dots[slideIndex - 1].style.opacity = 1;
+   }
+   
    slidesField.style.width = 100 * slides.length + '%';
    slidesField.style.display = 'flex';
    slidesField.style.transition = '0.5s all';
@@ -321,6 +327,14 @@ window.addEventListener('DOMContentLoaded', () => {
    slides.forEach(slide => {
       slide.style.width = width;
    });
+   // установка начальных значений счетчика
+   if (slides.length < 10) {
+      total.textContent = `0${slides.length}`;
+      current.textContent = `0${slideIndex}`;
+   } else {
+      total.textContent = slides.length;
+      current.textContent = slideIndex;
+   }
 
    slider.style.position = 'relative';
    //обертка для навигации (точек) 
@@ -355,14 +369,8 @@ window.addEventListener('DOMContentLoaded', () => {
       } else {
          slideIndex++;
       }
-      if (slides.length < 10) {
-         current.textContent = `0${slideIndex}`; 
-      } else {
-         current.textContent = slideIndex;
-      }
-
-      dots.forEach(dot => dot.style.opacity = '0.5');
-      dots[slideIndex - 1].style.opacity = 1;
+      showCounterSlide(slideIndex);
+      showDots(dots);
    });
    prev.addEventListener('click', () => {
       if (offset == 0) {
@@ -376,16 +384,9 @@ window.addEventListener('DOMContentLoaded', () => {
       } else {
          slideIndex--;
       }
-      if (slides.length < 10) {
-         current.textContent = `0${slideIndex}`; 
-      } else {
-         current.textContent = slideIndex;
-      }
-
-      dots.forEach(dot => dot.style.opacity = '0.5');
-      dots[slideIndex - 1].style.opacity = 1;
+      showCounterSlide(slideIndex);
+      showDots(dots);
    });
-   
    // функционал клика на точку 
    dots.forEach(dot => {    
       dot.addEventListener('click', (e) => {
@@ -396,13 +397,8 @@ window.addEventListener('DOMContentLoaded', () => {
          // делаем сдвиг карусели слайдов
          slidesField.style.transform = `translateX(-${offset}px)`;
          // ставим ведущий 0
-         if (slides.length < 10) {
-            current.textContent = `0${slideIndex}`; 
-         } else {
-            current.textContent = slideIndex;
-         }
-         dots.forEach(dot => dot.style.opacity = '0.5');
-         dots[slideIndex - 1].style.opacity = 1;
+         showCounterSlide(slideIndex);
+         showDots(dots);
       })
    })
 
