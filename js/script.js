@@ -43,7 +43,7 @@ window.addEventListener('DOMContentLoaded', () => {
    });
 
    // Timer
-   const deadLine = '2023-05-25'; // дата дедлайна
+   const deadLine = '2023-06-05'; // дата дедлайна
 
    // функция определения времени м-у текущим и дедлайном
    function getTimeRemaining(endtime) {
@@ -192,24 +192,6 @@ window.addEventListener('DOMContentLoaded', () => {
       }
    }
 
-   // выводим fetch в отдельную функцию для получения данных с json сервера   
-   // getResourse  не нужен при использовании axios
-   // const getResourse = async (url) => {
-   //    const res = await fetch(url);
-
-   //    if (!res.ok) {   // проверяем ответ на ошибку
-   //       throw new Error(`Coudn't fetch ${url}, status ${res.status}`);
-   //    }
-   //    return await res.json();
-   //};
-   // формирование карточек меню из данных сервера json
-   // вариант 1 - предпочтительный с исп. классов
-   // getResourse('http://localhost:3000/menu')
-   //    .then(data => {
-   //       data.forEach(({ img, altimg, title, descr, price }) => {
-   //          new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
-   //       });
-   //    });
    // вариант 1 - предпочтительный с исп. классов и axios  
    axios.get('http://localhost:3000/menu')
       .then(data => {
@@ -217,28 +199,7 @@ window.addEventListener('DOMContentLoaded', () => {
             new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
          });
       });
-   // вариант 2 - для формирования верстки с ходу (без использования классов)
-
-   // const courseOfCurrency = 36.93; // привязка к курсу для цены в карточках
-   // getResourse('http://localhost:3000/menu')
-   //    .then(data => creatCard(data));
-   // function creatCard(data) {
-   //    data.forEach(({ img, altimg, title, descr, price }) => {
-   //       const element = document.createElement('div');
-   //       element.classList.add('menu__item');
-   //       element.innerHTML = `
-   //          <img src=${img} alt=${altimg}>
-   //             <h3 class="menu__item-subtitle">${title}</h3>
-   //             <div class="menu__item-descr">${descr}</div>
-   //             <div class="menu__item-divider"></div>
-   //             <div class="menu__item-price">
-   //                <div class="menu__item-cost">Цена:</div>
-   //                <div class="menu__item-total"><span>${price*courseOfCurrency}</span> грн/день</div>
-   //             </div>
-   //       `;
-   //       document.querySelector('.menu .container').append(element);
-   //    });
-   // }
+   
 
    // Берем данные из форм на сайте и отправляем на сервер 
    const forms = document.querySelectorAll('form');
@@ -333,6 +294,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
    // Слайдер 
    const slides = document.querySelectorAll('.offer__slide'),
+      slider = document.querySelector('.offer__slider'),
       prev = document.querySelector('.offer__slider-prev'),  
       next = document.querySelector('.offer__slider-next'),
       total = document.querySelector('#total'),
@@ -360,12 +322,33 @@ window.addEventListener('DOMContentLoaded', () => {
       slide.style.width = width;
    });
 
+   slider.style.position = 'relative';
+   //обертка для навигации (точек) 
+   const indicators = document.createElement('ol'),
+         dots = []; // массив с точками
+      
+   indicators.classList.add('carousel-indicators');
+   slider.append(indicators);
+   //формируем точки
+   for (let i = 0; i < slides.length; i++) {
+      const dot = document.createElement('li');
+      dot.setAttribute('data-slide-to', i + 1);
+      dot.classList.add('dot');
+      if (i == 0) {
+         dot.style.opacity = 1;
+      }
+      indicators.append(dot);
+      dots.push(dot);
+   }
+
    next.addEventListener('click', () => {
+      // offset - задает смещение ленты слайдов для показа текущего
       if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)) {
          offset = 0;
       } else {
          offset += +width.slice(0, width.length - 2);
       }
+      // выполняем смещение
       slidesField.style.transform = `translateX(-${offset}px)`;
       if (slideIndex == slides.length) {
          slideIndex = 1;
@@ -377,6 +360,9 @@ window.addEventListener('DOMContentLoaded', () => {
       } else {
          current.textContent = slideIndex;
       }
+
+      dots.forEach(dot => dot.style.opacity = '0.5');
+      dots[slideIndex - 1].style.opacity = 1;
    });
    prev.addEventListener('click', () => {
       if (offset == 0) {
@@ -395,36 +381,30 @@ window.addEventListener('DOMContentLoaded', () => {
       } else {
          current.textContent = slideIndex;
       }
-   });
-   // showSlides(slideIndex);
-   
-   // if (slides.length < 10) {
-   //    total.textContent = `0${slides.length}`;
-   // } else {
-   //    total.textContent = slides.length;
-   // }
 
-   // function showSlides(n) {
-   //    if (n > slides.length) slideIndex = 1;
-   //    if (n < 1) slideIndex = slides.length;
-   //    slides.forEach(item => item.style.display = 'none');
-   //    slides[slideIndex - 1].style.display = 'block';
-   //    if (slideIndex < 10) {
-   //       current.textContent = `0${slideIndex}`;
-   //    } else {
-   //       current.textContent = slideIndex;
-   //    }
-   // }
+      dots.forEach(dot => dot.style.opacity = '0.5');
+      dots[slideIndex - 1].style.opacity = 1;
+   });
    
-   // function plusSlides(n) {
-   //    showSlides(slideIndex += n);
-   // }
-   
-   // prev.addEventListener('click', () => {
-   //    plusSlides(-1);
-   // });
-   // next.addEventListener('click', () => {
-   //    plusSlides(1);
-   // });
+   // функционал клика на точку 
+   dots.forEach(dot => {    
+      dot.addEventListener('click', (e) => {
+         const slideTo = e.target.getAttribute('data-slide-to'); 
+         slideIndex = slideTo; // изменяем счетчик на текущий слайд
+         // расчитываем смещение
+         offset = +width.slice(0, width.length - 2) * (slideTo - 1);
+         // делаем сдвиг карусели слайдов
+         slidesField.style.transform = `translateX(-${offset}px)`;
+         // ставим ведущий 0
+         if (slides.length < 10) {
+            current.textContent = `0${slideIndex}`; 
+         } else {
+            current.textContent = slideIndex;
+         }
+         dots.forEach(dot => dot.style.opacity = '0.5');
+         dots[slideIndex - 1].style.opacity = 1;
+      })
+   })
+
 });
 
